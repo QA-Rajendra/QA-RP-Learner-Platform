@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('qarp_theme')||'electric-dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('qarp_theme')||'electric-dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();(function(){try{if(typeof MutationObserver!=='undefined'){var o=new MutationObserver(function(m){for(var i=0;i<m.length;i++){if(m[i].target&&m[i].target.removeAttribute){m[i].target.removeAttribute('bis_skin_checked');}}});if(document.documentElement){o.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['bis_skin_checked']});}}}catch(e){}})();`,
           }}
         />
       </head>
