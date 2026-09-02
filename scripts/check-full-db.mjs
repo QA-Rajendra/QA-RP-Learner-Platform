@@ -1,3 +1,25 @@
+import fs from 'fs';
+import path from 'path';
+
+// Load environment variables manually if not already populated
+if (!process.env.MONGODB_URI) {
+  for (const envFile of ['.env.local', '.env', '.env.example']) {
+    const envPath = path.resolve(process.cwd(), envFile);
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+          const idx = trimmed.indexOf('=');
+          const key = trimmed.slice(0, idx).trim();
+          const val = trimmed.slice(idx + 1).trim();
+          if (!process.env[key]) process.env[key] = val;
+        }
+      }
+    }
+  }
+}
+
 import mongoose from 'mongoose';
 import connectDB from '../lib/mongodb.js';
 import User from '../models/User.js';
@@ -10,7 +32,7 @@ import MediaFile from '../models/MediaFile.js';
 import Message from '../models/Message.js';
 import Enrollment from '../models/Enrollment.js';
 import LessonProgress from '../models/LessonProgress.js';
-import Settings from '../models/Settings.js';
+import Settings from '../models/Setting.js';
 
 const colors = {
   reset: '\x1b[0m',

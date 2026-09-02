@@ -36,11 +36,10 @@ export async function GET() {
   try {
     await connectDB();
 
-    // Find a document that has the 'siteName' field (the new schema format)
-    let setting = await Setting.findOne({ siteName: { $exists: true } }).lean();
+    // Find existing setting document or create default
+    let setting = await Setting.findOne().lean();
 
     if (!setting) {
-      // Create fresh settings document with new schema
       const created = await Setting.create(DEFAULT_SETTINGS);
       setting = created.toJSON();
     } else {
@@ -49,7 +48,6 @@ export async function GET() {
         ...setting,
         _id: setting._id.toString(),
         siteName,
-        // Ensure paymentSettings is always present with defaults
         paymentSettings: setting.paymentSettings ?? DEFAULT_PAYMENT_SETTINGS,
       };
     }

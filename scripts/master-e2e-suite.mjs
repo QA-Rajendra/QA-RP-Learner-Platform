@@ -54,7 +54,7 @@ async function runMasterIntegrationSuite() {
       },
       body: new URLSearchParams({
         email: 'qarajendra4893@gmail.com',
-        password: 'Patil@321',
+        password: 'rgp@1234',
         csrfToken: csrfToken,
         json: 'true',
       }),

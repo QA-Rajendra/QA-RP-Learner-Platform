@@ -6,6 +6,17 @@ import ClientOnly from '@/components/common/ClientOnly';
 
 const inter = Inter({ subsets: ['latin'] });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0B1020' },
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+  ],
+};
+
 export const metadata = {
   title: 'QA RP Learner Platform',
   description: 'Enterprise QA Automation & E-Learning Platform by QA RP.',
