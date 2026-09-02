@@ -33,7 +33,7 @@ export default function SignInPage() {
     setError('');
     const result = await signIn('credentials', {
       email: 'qarajendra4893@gmail.com',
-      password: 'Patil@321',
+      password: 'rgp@1234',
       redirect: false
     });
     if (!result?.error) {

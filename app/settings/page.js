@@ -309,7 +309,7 @@ export default function SettingsPage() {
 
   const switchToAdmin = async () => {
     setSwitching(true);
-    let res = await signIn('credentials', { email: 'qarajendra4893@gmail.com', password: 'Patil@321', redirect: false });
+    let res = await signIn('credentials', { email: 'qarajendra4893@gmail.com', password: 'rgp@1234', redirect: false });
     if (res?.error) res = await signIn('credentials', { email: 'admin@example.com', password: 'demo', redirect: false });
     setSwitching(false);
     window.location.reload();

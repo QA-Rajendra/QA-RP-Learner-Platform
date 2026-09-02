@@ -59,7 +59,7 @@ const CATEGORIES = [
 ];
 
 const USERS = [
-  { name: "QA RP (Admin)", email: "qarajendra4893@gmail.com", password: "Patil@321", role: "ADMIN", status: "Active", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80", designation: "Lead QA Automation Engineer & Platform Admin" },
+  { name: "QA RP (Admin)", email: "qarajendra4893@gmail.com", password: "rgp@1234", role: "ADMIN", status: "Active", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80", designation: "Lead QA Automation Engineer & Platform Admin" },
   { name: "Alex Rivera", email: "user@example.com", password: "demo", role: "USER", status: "Active", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80", designation: "Enrolled Student / Learner" },
   { name: "Sophia Chang", email: "sophia@example.com", password: "demo", role: "USER", status: "Active", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80", designation: "Student" },
   { name: "Kenny White", email: "kenny@example.com", password: "demo", role: "USER", status: "Active", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80", designation: "Instructor" },
