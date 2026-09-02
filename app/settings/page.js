@@ -645,14 +645,11 @@ export default function SettingsPage() {
             </p>
           </div>
           <div className="space-y-3 pt-2">
-            <button
-              onClick={switchToAdmin} disabled={switching}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-white text-xs font-black shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+            <Link
+              href="/signin"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-white text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition"
             >
-              <Crown size={15} /> {switching ? 'Authenticating...' : '⚡ 1-Click Enter as Admin (QA RP)'}
-            </button>
-            <Link href="/signin" className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition border border-slate-700">
-              <Lock size={13} /> Custom Admin Login →
+              <Lock size={14} /> Sign In with Admin Credentials →
             </Link>
           </div>
         </div>

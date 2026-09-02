@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Lock, Mail, LogIn, ArrowLeft, Crown, Sparkles } from 'lucide-react';
+import { Shield, Lock, Mail, LogIn, ArrowLeft, Crown, Eye, EyeOff } from 'lucide-react';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -18,30 +19,18 @@ export default function SignInPage() {
     setLoading(true);
     setError('');
 
-    const result = await signIn('credentials', { email, password, redirect: false });
+    const result = await signIn('credentials', {
+      email: email.trim().toLowerCase(),
+      password,
+      redirect: false,
+    });
+
     if (result?.error) {
       setError('Invalid admin credentials. Access restricted.');
       setLoading(false);
     } else {
       router.push('/settings');
       router.refresh();
-    }
-  };
-
-  const handleQuickAdminLogin = async () => {
-    setLoading(true);
-    setError('');
-    const result = await signIn('credentials', {
-      email: 'qarajendra4893@gmail.com',
-      password: 'rgp@1234',
-      redirect: false
-    });
-    if (!result?.error) {
-      router.push('/settings');
-      router.refresh();
-    } else {
-      setError('Admin authorization failed.');
-      setLoading(false);
     }
   };
 
@@ -67,57 +56,19 @@ export default function SignInPage() {
           </div>
           <h1 className="text-2xl font-black text-white">Admin Portal</h1>
           <p className="text-xs text-slate-400 max-w-xs">
-            Sign in to access platform configuration, courses, lessons, and content manager.
+            Enter your admin credentials manually to access the platform management studio.
           </p>
         </div>
 
-        {/* Cached / Saved Fast Pass Box (Masked Password) */}
-        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-300 flex items-center gap-1.5">
-              <Shield size={13} className="text-red-400" /> Admin Security Key
-            </span>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-              Cached Session
-            </span>
-          </div>
-
-          <div className="text-xs text-slate-400 space-y-1 font-mono bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500">Admin:</span>
-              <span className="text-slate-200 font-bold">qarajendra4893@gmail.com</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500">Password:</span>
-              <span className="text-slate-400 tracking-widest">••••••••••••</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleQuickAdminLogin}
-            disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-white text-xs font-bold transition shadow-lg shadow-red-950/50 flex items-center justify-center gap-2 active:scale-95"
-          >
-            <Sparkles size={14} /> 1-Click Fast Admin Sign In
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="h-px bg-slate-800 flex-1" />
-          <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Or Enter Manually</span>
-          <div className="h-px bg-slate-800 flex-1" />
-        </div>
-
         {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-medium">
-            {error}
+          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-medium flex items-center gap-2">
+            <Shield size={14} className="text-red-400 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         {/* Manual Credentials Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1.5">Admin Email</label>
             <div className="relative">
@@ -125,10 +76,11 @@ export default function SignInPage() {
               <input
                 type="email"
                 required
+                autoComplete="off"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="qarajendra4893@gmail.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter admin email..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition"
               />
             </div>
           </div>
@@ -138,24 +90,38 @@ export default function SignInPage() {
             <div className="relative">
               <Lock className="absolute left-3.5 top-3 text-slate-500" size={16} />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="new-password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password manually..."
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition font-sans"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 transition p-0.5"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 border border-slate-700 shadow-md active:scale-95"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-white text-xs font-bold transition flex items-center justify-center gap-2 border border-red-500/30 shadow-lg shadow-red-950/50 active:scale-95 disabled:opacity-50 mt-2"
           >
-            <LogIn size={15} /> {loading ? 'Verifying...' : 'Sign In to Admin Studio'}
+            <LogIn size={15} /> {loading ? 'Verifying Credentials...' : 'Sign In to Admin Studio'}
           </button>
         </form>
+
+        <div className="text-center text-[11px] text-slate-500">
+          Protected by role-based authentication guard
+        </div>
       </div>
     </div>
   );
