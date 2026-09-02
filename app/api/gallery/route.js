@@ -96,9 +96,6 @@ export async function POST(req) {
       ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
       : Array.isArray(tagsRaw) ? tagsRaw : [];
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
     const createdRecords = [];
 
     for (let i = 0; i < fileList.length; i++) {
@@ -113,9 +110,29 @@ export async function POST(req) {
       const ext = path.extname(originalName).toLowerCase();
       const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
       const filename = `${timestamp}_${baseName}${ext}`;
-      const filepath = path.join(uploadDir, filename);
 
-      await writeFile(filepath, buffer);
+      let fileUrl = '';
+      let savedToDisk = false;
+
+      // Try local filesystem write if not on serverless environment
+      if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+        try {
+          const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+          await mkdir(uploadDir, { recursive: true });
+          const filepath = path.join(uploadDir, filename);
+          await writeFile(filepath, buffer);
+          fileUrl = `/uploads/${filename}`;
+          savedToDisk = true;
+        } catch (fsErr) {
+          console.warn('Filesystem write failed in gallery upload, falling back to Base64:', fsErr.message);
+        }
+      }
+
+      // Serverless fallback: convert to base64 Data URI
+      if (!savedToDisk) {
+        const mime = file.type || (ext === '.pdf' ? 'application/pdf' : 'application/octet-stream');
+        fileUrl = `data:${mime};base64,${buffer.toString('base64')}`;
+      }
 
       const isPdf = ext === '.pdf' || file.type === 'application/pdf';
       const isImg = ext.match(/\.(png|jpg|jpeg|webp|svg|gif|avif)$/i) || file.type?.startsWith('image/');
@@ -128,7 +145,7 @@ export async function POST(req) {
       const mediaRecord = await MediaFile.create({
         name: displayName,
         originalName,
-        url: `/uploads/${filename}`,
+        url: fileUrl,
         fileType,
         mimeType: file.type || (isPdf ? 'application/pdf' : 'application/octet-stream'),
         size: buffer.length,

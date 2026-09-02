@@ -77,12 +77,30 @@ export async function POST(request) {
     const timestamp = Date.now();
     const finalExt = originalExt || (ALLOWED_TYPES[mimeType] ? ALLOWED_TYPES[mimeType].ext : '.bin');
     const filename = `${timestamp}_${cleanBase}${finalExt}`;
-    const filePath = path.join(uploadsDir, filename);
 
-    // Write file to public/uploads
-    await writeFile(filePath, buffer);
+    let publicUrl = '';
+    let savedToDisk = false;
 
-    const publicUrl = `/uploads/${filename}`;
+    // Try saving to disk if not strictly on read-only serverless platforms
+    if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+      try {
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+        await mkdir(uploadsDir, { recursive: true });
+        const filePath = path.join(uploadsDir, filename);
+        await writeFile(filePath, buffer);
+        publicUrl = `/uploads/${filename}`;
+        savedToDisk = true;
+      } catch (fsErr) {
+        console.warn('Filesystem write failed (EROFS or permission), falling back to Base64 URI:', fsErr.message);
+      }
+    }
+
+    // Serverless / Read-only filesystem fallback: Convert to Data URI
+    if (!savedToDisk) {
+      const base64Data = buffer.toString('base64');
+      publicUrl = `data:${mimeType || 'application/octet-stream'};base64,${base64Data}`;
+    }
+
     const formattedSize = formatBytes(file.size);
 
     return NextResponse.json({
@@ -93,6 +111,7 @@ export async function POST(request) {
       fileType: fileCategory,
       mimeType: mimeType || 'application/octet-stream',
       filename,
+      storageType: savedToDisk ? 'disk' : 'base64',
     });
   } catch (error) {
     console.error('File Upload Error:', error);
