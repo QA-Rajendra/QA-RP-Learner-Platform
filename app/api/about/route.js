@@ -4,6 +4,8 @@ import authOptions from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Setting from '@/models/Setting';
 
+export const dynamic = 'force-dynamic';
+
 const DEFAULT_PROFILE = {
   name: "QA RP (QA Lead)",
   title: "QA Automation Architect & Instructor",

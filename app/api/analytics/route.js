@@ -6,6 +6,8 @@ import PortfolioProject from '@/models/PortfolioProject';
 import User from '@/models/User';
 import Category from '@/models/Category';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await connectDB();

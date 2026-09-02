@@ -5,6 +5,8 @@ import connectDB from '@/lib/mongodb';
 import Setting from '@/models/Setting';
 import Enrollment from '@/models/Enrollment';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     await connectDB();
