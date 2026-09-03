@@ -20,7 +20,8 @@ import {
   Check,
   ChevronDown,
   Palette,
-  Sparkles
+  Sparkles,
+  ClipboardList
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -90,6 +91,7 @@ export default function Navbar() {
             <NavLink href="/about" icon={<User size={13} />} label="About" active={pathname === '/about'} />
             <NavLink href="/courses" icon={<BookOpen size={13} />} label="Courses" active={pathname.startsWith('/courses') || pathname.startsWith('/learn')} />
             <NavLink href="/projects" icon={<Briefcase size={13} />} label="Projects" active={pathname === '/projects'} />
+            <NavLink href="/test-cases" icon={<ClipboardList size={13} />} label="Test Cases" active={pathname.startsWith('/test-cases')} />
             <NavLink href="/my-learning" icon={<GraduationCap size={13} />} label="My Learning" active={pathname === '/my-learning'} />
             <NavLink href="/contact" icon={<Mail size={13} />} label="Contact" active={pathname === '/contact'} />
             
@@ -271,6 +273,7 @@ export default function Navbar() {
           <MobileLink href="/about" label="👤 About Instructor" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/courses" label="📚 Courses Catalog" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/projects" label="💼 QA Projects" onClick={() => setMenuOpen(false)} />
+          <MobileLink href="/test-cases" label="🧪 QA Test Cases Suite" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/my-learning" label="🎓 My Learning Dashboard" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/contact" label="✉️ Contact & Inquiries" onClick={() => setMenuOpen(false)} />
           {isAdmin && (

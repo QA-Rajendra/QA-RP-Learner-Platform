@@ -16,8 +16,9 @@ import {
   HelpCircle, Award, Copy, Download, Laptop, Monitor, CheckCheck, Wand2,
   Tag, FolderPlus, Share2, FileCode, CheckSquare, ListPlus, Flame, Layout,
   FileJson, Clock, BarChart2, Star, Edit2, Database, Activity, TrendingUp, Info,
-  UploadCloud, Image as ImageIcon
+  UploadCloud, Image as ImageIcon, ClipboardList
 } from 'lucide-react';
+import CreateTestCaseModal from '@/components/testcases/CreateTestCaseModal';
 
 // ─── CONSTANTS & TEMPLATES ─────────────────────────────────────────────────
 const PRESET_AVATARS = [
@@ -124,6 +125,8 @@ export default function SettingsPage() {
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
   const [allLessons, setAllLessons] = useState([]);
+  const [testCasesList, setTestCasesList] = useState([]);
+  const [createTestCaseModalOpen, setCreateTestCaseModalOpen] = useState(false);
 
   // ── Pricing Settings
   const [pricingSettings, setPricingSettings] = useState({
@@ -274,7 +277,7 @@ export default function SettingsPage() {
   // ─── DATA LOADING ─────────────────────────────────────────────────────────
   const loadAllData = async () => {
     try {
-      const [crsRes, prjRes, vidRes, catRes, usrRes, lesRes, setRes] = await Promise.all([
+      const [crsRes, prjRes, vidRes, catRes, usrRes, lesRes, setRes, tcRes] = await Promise.all([
         fetch('/api/courses').then(r => r.json()).catch(() => []),
         fetch('/api/portfolio-projects').then(r => r.json()).catch(() => []),
         fetch('/api/youtube').then(r => r.json()).catch(() => []),
@@ -282,6 +285,7 @@ export default function SettingsPage() {
         fetch('/api/users').then(r => r.json()).catch(() => []),
         fetch('/api/lessons').then(r => r.json()).catch(() => []),
         fetch('/api/settings').then(r => r.json()).catch(() => ({})),
+        fetch('/api/test-cases').then(r => r.json()).catch(() => ({ testCases: [] })),
       ]);
       setCourses(Array.isArray(crsRes) ? crsRes : []);
       setProjects(Array.isArray(prjRes) ? prjRes : []);
@@ -289,6 +293,7 @@ export default function SettingsPage() {
       setCategories(Array.isArray(catRes) ? catRes : []);
       setUsers(Array.isArray(usrRes) ? usrRes : []);
       setAllLessons(Array.isArray(lesRes) ? lesRes : []);
+      setTestCasesList(Array.isArray(tcRes?.testCases) ? tcRes.testCases : []);
       if (setRes?.paymentSettings) setPricingSettings(setRes.paymentSettings);
     } catch (e) { console.error(e); }
   };
@@ -722,6 +727,8 @@ export default function SettingsPage() {
           <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-slate-800/80">
             <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')}
               icon={<Activity size={15} />} label="Dashboard" badge={`${courses.length + projects.length}`} />
+            <TabButton active={activeTab === 'testcases'} onClick={() => setActiveTab('testcases')}
+              icon={<ClipboardList size={15} />} label="Test Cases Studio" badge={`${testCasesList.length}`} />
             <TabButton active={activeTab === 'creator'} onClick={() => setActiveTab('creator')}
               icon={<Sparkles size={15} />} label="+ Creator Studio" badge="Admin CRUD" />
             <TabButton active={activeTab === 'courses'} onClick={() => setActiveTab('courses')}
@@ -759,6 +766,7 @@ export default function SettingsPage() {
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
+                  { label: '+ New Test Case', icon: <ClipboardList size={16} />, color: 'from-purple-600 to-indigo-600', action: () => setCreateTestCaseModalOpen(true) },
                   { label: '+ New Course', icon: <BookOpen size={16} />, color: 'from-purple-600 to-pink-600', action: () => setCourseModalOpen(true) },
                   { label: '+ New Project', icon: <Briefcase size={16} />, color: 'from-emerald-600 to-teal-600', action: () => setProjectModalOpen(true) },
                   { label: '+ New Category', icon: <Tag size={16} />, color: 'from-orange-600 to-amber-600', action: () => setCatModalOpen(true) },
@@ -893,8 +901,9 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                 {[
+                  { label: '+ Test Case', icon: '🧪', sub: 'Structured QA Case', color: 'from-purple-600 to-indigo-700', action: () => setCreateTestCaseModalOpen(true) },
                   { label: '+ Course', icon: '📚', sub: 'With Sections', color: 'from-purple-600 to-pink-700', action: () => { setCourseForm({ title: '', shortDescription: '', category: 'QA Automation', difficulty: 'Beginner', duration: '8 Weeks', instructor: 'QA RP', isFree: true, price: 0, status: 'Active', thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=700&auto=format&fit=crop&q=80' }); setCourseModalOpen(true); } },
                   { label: '+ Portfolio', icon: '💼', sub: 'QA Case Study', color: 'from-emerald-600 to-teal-700', action: () => setProjectModalOpen(true) },
                   { label: '+ Category', icon: '🏷️', sub: 'Taxonomy Node', color: 'from-orange-600 to-amber-700', action: () => setCatModalOpen(true) },
@@ -2806,6 +2815,135 @@ export default function SettingsPage() {
           </form>
         </div>
       )}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          TAB: TEST CASES STUDIO
+      ════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'testcases' && (
+        <div className="space-y-6">
+          <div className="p-6 sm:p-8 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold">
+                <ClipboardList size={14} /> Test Case Management Studio
+              </div>
+              <h2 className="text-2xl font-black text-white">Structured QA Test Repository</h2>
+              <p className="text-xs text-slate-400 max-w-xl">
+                Manage, create, and link test cases across all platform modules. Live synchronization with MongoDB Atlas.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/test-cases"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition"
+              >
+                Full Test Suite Matrix →
+              </Link>
+              <button
+                onClick={() => setCreateTestCaseModalOpen(true)}
+                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-950/50 flex items-center gap-2 transition cursor-pointer"
+              >
+                <Plus size={15} /> + Create Test Case
+              </button>
+            </div>
+          </div>
+
+          {/* Test Cases Table */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
+                <ClipboardList size={16} className="text-purple-400" />
+                Active Test Cases ({testCasesList.length})
+              </h3>
+              <button onClick={loadAllData} className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer">
+                <RefreshCw size={13} /> Refresh
+              </button>
+            </div>
+
+            {testCasesList.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mx-auto">
+                  <ClipboardList size={20} />
+                </div>
+                <div className="text-xs text-slate-400">No test cases found in database.</div>
+                <button
+                  onClick={() => setCreateTestCaseModalOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer"
+                >
+                  Create First Test Case
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-800/60">
+                {testCasesList.map((tc) => (
+                  <div key={tc._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/30 transition">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded border border-purple-500/30">
+                          {tc.testCaseId}
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          {tc.module}
+                        </span>
+                        <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">
+                          {tc.priority}
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
+                          {tc.type}
+                        </span>
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-white truncate">
+                        {tc.name}
+                      </div>
+                      {tc.description && (
+                        <div className="text-[11px] text-slate-400 line-clamp-1">
+                          {tc.description}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        href="/test-cases"
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+                      >
+                        Inspect Steps
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Delete test case "${tc.name}"?`)) return;
+                          try {
+                            const res = await fetch(`/api/test-cases/${tc._id}`, { method: 'DELETE' });
+                            if (res.ok) {
+                              showToast(`✓ Deleted "${tc.testCaseId}"`);
+                              loadAllData();
+                            }
+                          } catch (err) {
+                            showToast(err.message, 'error');
+                          }
+                        }}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Create Test Case Modal */}
+      <CreateTestCaseModal
+        isOpen={createTestCaseModalOpen}
+        onClose={() => setCreateTestCaseModalOpen(false)}
+        onSuccess={() => {
+          showToast('✓ Test Case created successfully!');
+          loadAllData();
+        }}
+      />
     </div>
   );
 }

@@ -2,13 +2,17 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   Briefcase,
   CheckCircle2,
   ExternalLink,
   Code2,
-  Search
+  Search,
+  ClipboardList,
+  Plus
 } from 'lucide-react';
+import CreateTestCaseModal from '@/components/testcases/CreateTestCaseModal';
 
 function ProjectsContent() {
   const searchParams = useSearchParams();
@@ -19,6 +23,8 @@ function ProjectsContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
+  const [testCaseModalOpen, setTestCaseModalOpen] = useState(false);
+  const [selectedProjectForCase, setSelectedProjectForCase] = useState(null);
 
   useEffect(() => {
     if (searchParams.get('category')) {
@@ -122,6 +128,23 @@ function ProjectsContent() {
           <p className="text-sm sm:text-base text-slate-400">
             Real-world QA engineering case studies, framework repositories, automation coverage metrics, and defect reports.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => {
+                setSelectedProjectForCase(null);
+                setTestCaseModalOpen(true);
+              }}
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-2 transition shadow-lg shadow-purple-950/50 cursor-pointer"
+            >
+              <Plus size={15} /> + Create New Test Case
+            </button>
+            <Link
+              href="/test-cases"
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-2 transition cursor-pointer"
+            >
+              <ClipboardList size={15} /> Test Cases Matrix →
+            </Link>
+          </div>
         </div>
 
         {/* Dynamic Category Chips */}
@@ -243,15 +266,25 @@ function ProjectsContent() {
               </div>
 
               {/* Links & CTA */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-800/80">
+              <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-slate-800/80">
+                <button
+                  onClick={() => {
+                    setSelectedProjectForCase(proj);
+                    setTestCaseModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-bold transition cursor-pointer"
+                  title="Add Test Case to this Project"
+                >
+                  <Plus size={13} /> Test Case
+                </button>
                 {proj.links?.github && (
                   <a
                     href={proj.links.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition border border-slate-700"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition border border-slate-700"
                   >
-                    <Code2 size={15} /> GitHub Repo
+                    <Code2 size={13} /> Repo
                   </a>
                 )}
                 {proj.links?.live && (
@@ -259,9 +292,9 @@ function ProjectsContent() {
                     href={proj.links.live}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition shadow-md shadow-purple-950/50"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition shadow-md shadow-purple-950/50"
                   >
-                    <ExternalLink size={15} /> Live Demo
+                    <ExternalLink size={13} /> Demo
                   </a>
                 )}
               </div>
@@ -269,6 +302,17 @@ function ProjectsContent() {
           ))}
         </div>
       </div>
+
+      {/* Create Test Case Modal */}
+      <CreateTestCaseModal
+        isOpen={testCaseModalOpen}
+        onClose={() => setTestCaseModalOpen(false)}
+        projectId={selectedProjectForCase?._id}
+        initialModule={selectedProjectForCase?.category || 'Login'}
+        onSuccess={() => {
+          loadData();
+        }}
+      />
     </div>
   );
 }
