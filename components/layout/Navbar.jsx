@@ -17,25 +17,19 @@ import {
   User,
   Mail,
   Shield,
-  Check,
   ChevronDown,
-  Palette,
-  Sparkles,
   ClipboardList,
   ShieldCheck
 } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [themeDropdown, setThemeDropdown] = useState(false);
   const [adminDropdown, setAdminDropdown] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme, isDark, themes, currentTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -192,93 +186,8 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Quick Controls: Animated Themes Selector & Role/Auth */}
+          {/* Quick Controls: Role/Auth */}
           <div className="flex items-center gap-2.5">
-            {/* ANIMATED THEMES DROPDOWN */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setThemeDropdown(!themeDropdown)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-300 shadow-sm"
-                style={{
-                  backgroundColor: 'var(--bg-card)',
-                  borderColor: themeDropdown ? 'var(--border-active)' : 'var(--border-color)',
-                  color: 'var(--text-main)',
-                  boxShadow: themeDropdown ? 'var(--primary-glow)' : 'none',
-                }}
-                title="Switch Theme"
-              >
-                <span className="text-sm">{currentTheme?.icon || '⚡'}</span>
-                <span className="hidden sm:inline font-semibold">{currentTheme?.name || 'Theme'}</span>
-                <ChevronDown size={13} className={`opacity-60 transition-transform duration-200 ${themeDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Exact Animated Themes Menu Box from Screenshot */}
-              {themeDropdown && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setThemeDropdown(false)} />
-                  <div
-                    className="absolute right-0 mt-2 w-64 rounded-2xl p-2.5 z-50 border shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-150"
-                    style={{
-                      backgroundColor: 'var(--bg-card)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-main)',
-                      boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
-                    }}
-                  >
-                    {/* Header: ANIMATED THEMES */}
-                    <div className="px-2.5 py-1.5 flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-60">
-                      <span>Animated Themes</span>
-                      <Sparkles size={11} style={{ color: 'var(--color-primary)' }} />
-                    </div>
-
-                    <div className="space-y-1 mt-1">
-                      {themes.map((t) => {
-                        const isSelected = theme === t.id;
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => {
-                              setTheme(t.id);
-                              setThemeDropdown(false);
-                            }}
-                            className="w-full text-left px-3 py-2 rounded-xl flex items-center justify-between transition-all duration-150 group"
-                            style={{
-                              backgroundColor: isSelected ? 'var(--bg-card-hover, rgba(255,255,255,0.08))' : 'transparent',
-                              border: isSelected ? '1px solid var(--border-active)' : '1px solid transparent',
-                              boxShadow: isSelected ? 'var(--primary-glow)' : 'none',
-                            }}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="text-base shrink-0">{t.icon}</span>
-                              <div className="truncate">
-                                <span
-                                  className="text-xs font-bold block truncate"
-                                  style={{
-                                    color: isSelected ? 'var(--color-primary)' : 'var(--text-main)',
-                                  }}
-                                >
-                                  {t.name}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Active Indicator / Color Dot */}
-                            <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full border border-black/20 inline-block"
-                                style={{ backgroundColor: t.colors.primary }}
-                              />
-                              {isSelected && <Check size={13} style={{ color: 'var(--color-primary)' }} />}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
 
             {isAdmin ? (
               /* Admin Active State */

@@ -75,6 +75,11 @@ const TestCaseSchema = new mongoose.Schema(
       ref: 'PortfolioProject',
       default: null,
     },
+    suite: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['Draft', 'Ready', 'In Review', 'Automated', 'Passed', 'Failed'],
@@ -93,6 +98,6 @@ const TestCaseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-TestCaseSchema.index({ module: 1, priority: 1, type: 1 });
+TestCaseSchema.index({ module: 1, suite: 1, priority: 1, type: 1 });
 
 export default mongoose.models.TestCase || mongoose.model('TestCase', TestCaseSchema);
