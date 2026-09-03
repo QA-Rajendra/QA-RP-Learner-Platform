@@ -73,8 +73,12 @@ function TestCasesContent() {
       if (selectedType !== 'All') params.append('type', selectedType);
       if (selectedStatus !== 'All') params.append('status', selectedStatus);
       if (search.trim()) params.append('search', search.trim());
+      params.append('_t', Date.now());
 
-      const res = await fetch(`/api/test-cases?${params.toString()}`);
+      const res = await fetch(`/api/test-cases?${params.toString()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+      });
       if (res.ok) {
         const data = await res.json();
         setTestCases(data.testCases || []);
@@ -99,26 +103,52 @@ function TestCasesContent() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Delete test case
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Delete test case "${name}"?`)) return;
+  // Delete test case with optimistic UI update and dual fallback
+  const handleDelete = async (id, name, testCaseId) => {
+    const displayName = name || testCaseId || 'this test case';
+    if (!confirm(`Delete test case "${displayName}"?`)) return;
+
+    const targetId = id || testCaseId;
+
+    // Optimistic removal: remove immediately from UI
+    setTestCases(prev => prev.filter(c => c._id !== targetId && c.testCaseId !== targetId && c._id !== id));
+    setStats(prev => ({ ...prev, total: Math.max(0, (prev.total || 1) - 1) }));
+
     try {
-      const res = await fetch(`/api/test-cases/${id}`, { method: 'DELETE' });
+      let res = await fetch(`/api/test-cases/${encodeURIComponent(targetId)}`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      });
+
+      if (!res.ok) {
+        // Fallback to query param endpoint
+        res = await fetch(`/api/test-cases?id=${encodeURIComponent(targetId)}`, {
+          method: 'DELETE',
+          cache: 'no-store',
+        });
+      }
+
       if (res.ok) {
-        showToast(`✓ Test Case "${name}" deleted`);
+        showToast(`✓ Test Case "${displayName}" deleted successfully`);
         fetchTestCases();
       } else {
-        showToast('Failed to delete test case', 'error');
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'Failed to delete test case', 'error');
+        fetchTestCases();
       }
     } catch (err) {
       showToast(err.message, 'error');
+      fetchTestCases();
     }
   };
 
-  // Toggle status (e.g. Passed / Failed / Ready)
+  // Toggle status (e.g. Passed / Failed / Ready) with optimistic UI update
   const handleToggleStatus = async (testCase, newStatus) => {
+    const targetId = testCase._id || testCase.testCaseId;
+    setTestCases(prev => prev.map(c => (c._id === targetId || c.testCaseId === targetId) ? { ...c, status: newStatus } : c));
+
     try {
-      const res = await fetch(`/api/test-cases/${testCase._id}`, {
+      const res = await fetch(`/api/test-cases/${encodeURIComponent(targetId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -126,9 +156,12 @@ function TestCasesContent() {
       if (res.ok) {
         showToast(`✓ ${testCase.testCaseId} set to "${newStatus}"`);
         fetchTestCases();
+      } else {
+        fetchTestCases();
       }
     } catch (err) {
       showToast(err.message, 'error');
+      fetchTestCases();
     }
   };
 
@@ -439,7 +472,7 @@ function TestCasesContent() {
 
                         {/* Delete */}
                         <button
-                          onClick={() => handleDelete(tc._id, tc.name)}
+                          onClick={() => handleDelete(tc._id, tc.name, tc.testCaseId)}
                           className="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
                           title="Delete Test Case"
                         >

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
   Play,
@@ -37,6 +38,7 @@ import PaidContentFeeModal from '@/components/payment/PaidContentFeeModal';
 export default function LessonPlayerPage({ params }) {
   const unwrappedParams = use(params);
   const { courseId, lessonId } = unwrappedParams;
+  const { data: session } = useSession();
 
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
@@ -197,7 +199,8 @@ export default function LessonPlayerPage({ params }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 'user_demo_1',
+          userId: session?.user?.id || session?.user?.email || 'guest_learner',
+          userEmail: session?.user?.email || '',
           courseId,
           completed: true,
         }),

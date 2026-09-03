@@ -6,6 +6,11 @@ import User from '@/models/User';
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin access required' }, { status: 403 });
+    }
+
     await connectDB();
     const users = await User.find().sort({ createdAt: -1 }).lean();
     return NextResponse.json(users.map(u => ({ ...u, _id: u._id.toString(), password: undefined })));

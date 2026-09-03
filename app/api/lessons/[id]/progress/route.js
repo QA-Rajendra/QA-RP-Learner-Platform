@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import authOptions from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import LessonProgress from '@/models/LessonProgress';
 import Lesson from '@/models/Lesson';
@@ -8,9 +10,14 @@ import Course from '@/models/Course';
 export async function POST(req, { params }) {
   try {
     await connectDB();
+    const session = await getServerSession(authOptions);
     const { id: lessonId } = await Promise.resolve(params);
     const body = await req.json();
-    let { userId = 'user_demo_1', courseId, completed = true } = body;
+
+    const userId = session?.user?.id || session?.user?.email || body.userId || 'guest_learner';
+    const userEmail = session?.user?.email || body.userEmail || '';
+    const userName = session?.user?.name || body.userName || 'Learner';
+    let { courseId, completed = true } = body;
 
     if (!courseId) {
       const l = await Lesson.findById(lessonId).lean();
@@ -48,6 +55,8 @@ export async function POST(req, { params }) {
       { userId, courseId },
       {
         userId,
+        userEmail,
+        userName,
         courseId,
         courseTitle: course?.title || 'QA Course',
         courseThumbnail: course?.thumbnail || '',

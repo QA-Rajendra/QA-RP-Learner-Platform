@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import authOptions from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Enrollment from '@/models/Enrollment';
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin access required' }, { status: 403 });
+    }
+
     await connectDB();
     const students = await User.find({ role: 'USER' }).sort({ createdAt: -1 }).lean();
 

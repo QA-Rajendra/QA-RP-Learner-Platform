@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
   Briefcase,
@@ -17,8 +18,8 @@ import CreateTestCaseModal from '@/components/testcases/CreateTestCaseModal';
 function ProjectsContent() {
   const searchParams = useSearchParams();
   const initialCat = searchParams.get('category') || 'All';
-
-  const [projects, setProjects] = useState([]);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -129,15 +130,17 @@ function ProjectsContent() {
             Real-world QA engineering case studies, framework repositories, automation coverage metrics, and defect reports.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => {
-                setSelectedProjectForCase(null);
-                setTestCaseModalOpen(true);
-              }}
-              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-2 transition shadow-lg shadow-purple-950/50 cursor-pointer"
-            >
-              <Plus size={15} /> + Create New Test Case
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setSelectedProjectForCase(null);
+                  setTestCaseModalOpen(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-2 transition shadow-lg shadow-purple-950/50 cursor-pointer"
+              >
+                <Plus size={15} /> + Create New Test Case
+              </button>
+            )}
             <Link
               href="/test-cases"
               className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center gap-2 transition cursor-pointer"
@@ -267,16 +270,18 @@ function ProjectsContent() {
 
               {/* Links & CTA */}
               <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-slate-800/80">
-                <button
-                  onClick={() => {
-                    setSelectedProjectForCase(proj);
-                    setTestCaseModalOpen(true);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-bold transition cursor-pointer"
-                  title="Add Test Case to this Project"
-                >
-                  <Plus size={13} /> Test Case
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setSelectedProjectForCase(proj);
+                      setTestCaseModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-bold transition cursor-pointer"
+                    title="Add Test Case to this Project"
+                  >
+                    <Plus size={13} /> Test Case
+                  </button>
+                )}
                 {proj.links?.github && (
                   <a
                     href={proj.links.github}

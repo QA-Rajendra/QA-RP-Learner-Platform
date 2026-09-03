@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import TestCase from '@/models/TestCase';
 import PortfolioProject from '@/models/PortfolioProject';
 import { parseTestCaseContent } from '@/lib/testCaseParser';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(req) {
   try {
@@ -149,6 +153,51 @@ export async function POST(req) {
     console.error('POST /api/test-cases error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to create test case' },
+      { status: 500 }
+    );
+  }
+}
+
+// Fallback query DELETE /api/test-cases?id=...
+export async function DELETE(req) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Test case ID parameter is required' }, { status: 400 });
+    }
+
+    let deleted = null;
+    if (mongoose.isValidObjectId(id)) {
+      deleted = await TestCase.findByIdAndDelete(id);
+    }
+
+    if (!deleted) {
+      deleted = await TestCase.findOneAndDelete({
+        $or: [
+          { testCaseId: id },
+          { scenarioId: id },
+          { name: id },
+        ],
+      });
+    }
+
+    if (!deleted) {
+      return NextResponse.json({ error: 'Test case not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Test case deleted successfully',
+      id: deleted._id,
+      testCaseId: deleted.testCaseId,
+    });
+  } catch (error) {
+    console.error('DELETE /api/test-cases error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete test case' },
       { status: 500 }
     );
   }

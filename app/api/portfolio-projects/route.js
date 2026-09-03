@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import authOptions from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import PortfolioProject from '@/models/PortfolioProject';
 
@@ -37,6 +39,11 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin role required' }, { status: 403 });
+    }
+
     await connectDB();
     const body = await req.json();
 

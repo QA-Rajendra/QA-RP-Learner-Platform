@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import authOptions from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import PortfolioProject from '@/models/PortfolioProject';
 import mongoose from 'mongoose';
@@ -29,6 +31,11 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin access required' }, { status: 403 });
+    }
+
     await connectDB();
     const { id } = await Promise.resolve(params);
     const body = await req.json();
@@ -47,6 +54,11 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin access required' }, { status: 403 });
+    }
+
     await connectDB();
     const { id } = await Promise.resolve(params);
     const { searchParams } = new URL(req.url);

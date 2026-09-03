@@ -12,9 +12,9 @@ const colors = {
 let passed = 0;
 let failed = 0;
 
-async function checkRoute(name, path, expectedStatus = 200) {
+async function checkRoute(name, path, expectedStatus = 200, fetchOptions = {}) {
   try {
-    const res = await fetch(`${BASE_URL}${path}`);
+    const res = await fetch(`${BASE_URL}${path}`, fetchOptions);
     if (res.status === expectedStatus) {
       console.log(`  ${colors.green}✓ PASS: [${res.status}] ${name} (${path})${colors.reset}`);
       passed++;
@@ -35,6 +35,23 @@ async function runAllModulesCheck() {
   console.log(`\n${colors.bold}${colors.cyan}================================================================${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}  QA RP Platform — Full Cross-Module Interoperability Check     ${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}================================================================${colors.reset}\n`);
+
+  let authCookie = '';
+  try {
+    const csrfRes = await fetch(`${BASE_URL}/api/auth/csrf`);
+    if (csrfRes.ok) {
+      const csrfData = await csrfRes.json();
+      const csrfCookie = csrfRes.headers.get('set-cookie') || '';
+      const authRes = await fetch(`${BASE_URL}/api/auth/callback/credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': csrfCookie },
+        body: new URLSearchParams({ email: 'qarajendra4893@gmail.com', password: 'rgp@1234', csrfToken: csrfData.csrfToken, json: 'true' }),
+        redirect: 'manual',
+      });
+      const setCookieHeaders = authRes.headers.getSetCookie ? authRes.headers.getSetCookie() : [authRes.headers.get('set-cookie')];
+      authCookie = setCookieHeaders.filter(Boolean).map(c => c.split(';')[0]).join('; ');
+    }
+  } catch (e) {}
 
   // 1. Core Platform Pages
   console.log(`${colors.bold}${colors.yellow}[Group 1] Frontend Public & Core Pages${colors.reset}`);
@@ -57,7 +74,7 @@ async function runAllModulesCheck() {
   await checkRoute('GET /api/portfolio-projects (QA Projects)', '/api/portfolio-projects');
   await checkRoute('GET /api/categories (Categories)', '/api/categories');
   await checkRoute('GET /api/youtube (Video Hub)', '/api/youtube');
-  await checkRoute('GET /api/users (User Accounts)', '/api/users');
+  await checkRoute('GET /api/users (User Accounts)', '/api/users', 200, { headers: { Cookie: authCookie } });
 
   // 3. Dynamic Course & Learning Player Interoperability
   console.log(`\n${colors.bold}${colors.yellow}[Group 3] Dynamic Learning Workspace & Course Details${colors.reset}`);

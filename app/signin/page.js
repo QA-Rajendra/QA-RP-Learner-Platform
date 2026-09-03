@@ -26,10 +26,12 @@ export default function SignInPage() {
     });
 
     if (result?.error) {
-      setError('Invalid admin credentials. Access restricted.');
+      setError('Invalid email or password. Please try again.');
       setLoading(false);
     } else {
-      router.push('/settings');
+      const cleanEmail = email.trim().toLowerCase();
+      const destination = cleanEmail === 'qarajendra4893@gmail.com' ? '/settings' : '/my-learning';
+      router.push(destination);
       router.refresh();
     }
   };

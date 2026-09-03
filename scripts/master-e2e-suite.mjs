@@ -315,7 +315,9 @@ async function runMasterIntegrationSuite() {
   // ══════════════════════════════════════════════════════════════════
   console.log(`\n${colors.bold}${colors.yellow}[Section 8] Ancillary & Automation Utility REST APIs${colors.reset}`);
   try {
-    const uRes = await fetch(`${BASE_URL}/api/users`);
+    const uRes = await fetch(`${BASE_URL}/api/users`, {
+      headers: { 'Cookie': authCookie },
+    });
     assert.strictEqual(uRes.status, 200);
     logPass('GET /api/users returns user directory');
   } catch (e) { logFail('GET /api/users failed', e.message); }

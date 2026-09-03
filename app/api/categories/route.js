@@ -16,6 +16,11 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: '403 Forbidden - Admin role required' }, { status: 403 });
+    }
+
     await connectDB();
     const body = await request.json();
     const cat = await Category.create({

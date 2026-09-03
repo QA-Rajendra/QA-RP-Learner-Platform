@@ -32,6 +32,24 @@ async function runGalleryIntegrationSuite() {
   let imageId = null;
   let pdfId = null;
 
+  // Step 0: Admin Authentication
+  let authCookie = '';
+  try {
+    const csrfRes = await fetch(`${BASE_URL}/api/auth/csrf`);
+    if (csrfRes.ok) {
+      const csrfData = await csrfRes.json();
+      const csrfCookie = csrfRes.headers.get('set-cookie') || '';
+      const authRes = await fetch(`${BASE_URL}/api/auth/callback/credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': csrfCookie },
+        body: new URLSearchParams({ email: 'qarajendra4893@gmail.com', password: 'rgp@1234', csrfToken: csrfData.csrfToken, json: 'true' }),
+        redirect: 'manual',
+      });
+      const setCookieHeaders = authRes.headers.getSetCookie ? authRes.headers.getSetCookie() : [authRes.headers.get('set-cookie')];
+      authCookie = setCookieHeaders.filter(Boolean).map(c => c.split(';')[0]).join('; ');
+    }
+  } catch (e) {}
+
   // 1. Upload PNG Image
   console.log(`${colors.bold}${colors.yellow}[Step 1] Image Upload & Metadata Persistence${colors.reset}`);
   try {
@@ -45,6 +63,7 @@ async function runGalleryIntegrationSuite() {
 
     const res = await fetch(`${BASE_URL}/api/gallery`, {
       method: 'POST',
+      headers: { Cookie: authCookie },
       body: imgFormData,
     });
     assert.strictEqual(res.status, 201);
@@ -71,6 +90,7 @@ async function runGalleryIntegrationSuite() {
 
     const res = await fetch(`${BASE_URL}/api/gallery`, {
       method: 'POST',
+      headers: { Cookie: authCookie },
       body: pdfFormData,
     });
     assert.strictEqual(res.status, 201);
@@ -134,7 +154,7 @@ async function runGalleryIntegrationSuite() {
   try {
     const putRes = await fetch(`${BASE_URL}/api/gallery/${imageId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Cookie: authCookie },
       body: JSON.stringify({
         name: 'Updated Architecture Blueprint v2',
         category: 'Enterprise Frameworks',
@@ -164,11 +184,11 @@ async function runGalleryIntegrationSuite() {
   console.log(`\n${colors.bold}${colors.yellow}[Step 6] Teardown & Permanent Deletion (DELETE /api/gallery/:id)${colors.reset}`);
   try {
     if (imageId) {
-      const delImg = await fetch(`${BASE_URL}/api/gallery/${imageId}`, { method: 'DELETE' });
+      const delImg = await fetch(`${BASE_URL}/api/gallery/${imageId}`, { method: 'DELETE', headers: { Cookie: authCookie } });
       assert.strictEqual(delImg.status, 200);
     }
     if (pdfId) {
-      const delPdf = await fetch(`${BASE_URL}/api/gallery/${pdfId}`, { method: 'DELETE' });
+      const delPdf = await fetch(`${BASE_URL}/api/gallery/${pdfId}`, { method: 'DELETE', headers: { Cookie: authCookie } });
       assert.strictEqual(delPdf.status, 200);
     }
     logPass('DELETE /api/gallery/:id safely unlinked files from disk & deleted MongoDB records');

@@ -299,12 +299,10 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      await loadAllData();
-    })();
-    return () => { cancelled = true; };
-  }, []);
+    if (isAdmin) {
+      loadAllData();
+    }
+  }, [isAdmin]);
 
   // ─── HELPERS ──────────────────────────────────────────────────────────────
   const showToast = (message, type = 'success') => {
@@ -312,19 +310,13 @@ export default function SettingsPage() {
     setTimeout(() => setSaveStatus({ show: false, message: '', type: 'success' }), 4000);
   };
 
-  const switchToAdmin = async () => {
-    setSwitching(true);
-    let res = await signIn('credentials', { email: 'qarajendra4893@gmail.com', password: 'rgp@1234', redirect: false });
-    if (res?.error) res = await signIn('credentials', { email: 'admin@example.com', password: 'demo', redirect: false });
-    setSwitching(false);
-    window.location.reload();
+  const switchToAdmin = () => {
+    router.push('/signin');
   };
 
   const switchToUser = async () => {
     setSwitching(true);
-    await signOut({ redirect: false });
-    setSwitching(false);
-    window.location.reload();
+    await signOut({ callbackUrl: '/' });
   };
 
   // ─── ACTION HANDLERS ──────────────────────────────────────────────────────
@@ -878,6 +870,162 @@ export default function SettingsPage() {
                   {projects.length === 0 && <div className="p-8 text-center text-xs text-slate-500">No projects yet. Click "+ Add Project".</div>}
                 </div>
               </div>
+            </div>
+
+            {/* Test Cases Suite Section */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+              <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                    <ClipboardList size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-white">Test Cases Suite</h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        {testCasesList.length} Cases
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Live QA execution matrix, Access Control (RBAC) tests, and enterprise automation scenarios.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    onClick={() => setCreateTestCaseModalOpen(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md shadow-purple-950/40 cursor-pointer"
+                  >
+                    <Plus size={13} /> Add Test Case
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('testcases')}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition border border-purple-500/20 cursor-pointer"
+                  >
+                    <span>Full Studio</span>
+                    <ArrowRight size={13} />
+                  </button>
+                  <Link
+                    href="/test-cases"
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700 cursor-pointer"
+                    title="Open Live Public Test Cases View"
+                  >
+                    <ExternalLink size={13} />
+                    <span className="hidden sm:inline">Live Matrix</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Test Cases Table / List */}
+              <div className="divide-y divide-slate-800/60">
+                {testCasesList.slice(0, 6).map((tc) => {
+                  const targetId = tc._id || tc.testCaseId;
+                  const priorityColor =
+                    tc.priority === 'Critical' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' :
+                    tc.priority === 'High' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                    'bg-slate-800 text-slate-300 border-slate-700';
+
+                  const statusColor =
+                    tc.status === 'Passed' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                    tc.status === 'Automated' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' :
+                    tc.status === 'Failed' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' :
+                    'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+
+                  return (
+                    <div key={targetId} className="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-800/30 transition">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-[11px] font-black text-purple-400 bg-purple-950/60 border border-purple-500/30 px-2 py-0.5 rounded-md">
+                            {tc.testCaseId || 'TC-000'}
+                          </span>
+                          <span className="text-xs font-bold text-slate-200 truncate max-w-md">
+                            {tc.name || tc.scenarioId || 'Untitled Test Case'}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                            {tc.module || 'General'}
+                          </span>
+                          <span>•</span>
+                          <span className={`px-1.5 py-0.5 rounded border text-[9px] font-extrabold ${priorityColor}`}>
+                            {tc.priority || 'Medium'}
+                          </span>
+                          <span>•</span>
+                          <span className={`px-1.5 py-0.5 rounded border text-[9px] font-extrabold ${statusColor}`}>
+                            {tc.status || 'Ready'}
+                          </span>
+                          {tc.steps?.length > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>{tc.steps.length} Steps</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                        <Link
+                          href={`/test-cases`}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+                          title="View on Test Cases Matrix"
+                        >
+                          <Eye size={12} />
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`Delete test case "${tc.name || tc.testCaseId}"?`)) return;
+                            setTestCasesList(prev => prev.filter(c => c._id !== targetId && c.testCaseId !== targetId && c._id !== tc._id));
+                            try {
+                              let res = await fetch(`/api/test-cases/${encodeURIComponent(targetId)}`, {
+                                method: 'DELETE',
+                                cache: 'no-store',
+                              });
+                              if (!res.ok) {
+                                res = await fetch(`/api/test-cases?id=${encodeURIComponent(targetId)}`, {
+                                  method: 'DELETE',
+                                  cache: 'no-store',
+                                });
+                              }
+                              if (res.ok) {
+                                showToast(`✓ Test Case "${tc.testCaseId}" deleted successfully`);
+                                loadAllData();
+                              } else {
+                                showToast('Failed to delete test case', 'error');
+                                loadAllData();
+                              }
+                            } catch (e) {
+                              showToast(e.message, 'error');
+                              loadAllData();
+                            }
+                          }}
+                          title="Delete Test Case"
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {testCasesList.length === 0 && (
+                  <div className="p-8 text-center text-xs text-slate-500">
+                    No test cases in database. Click "+ Add Test Case" to create one.
+                  </div>
+                )}
+              </div>
+
+              {testCasesList.length > 6 && (
+                <div className="p-3 bg-slate-950/40 border-t border-slate-800 text-center">
+                  <button
+                    onClick={() => setActiveTab('testcases')}
+                    className="text-xs text-purple-400 hover:text-purple-300 font-bold transition inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    View all {testCasesList.length} test cases in Test Cases Studio &rarr;
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2910,19 +3058,39 @@ export default function SettingsPage() {
                       </Link>
                       <button
                         onClick={async () => {
-                          if (!confirm(`Delete test case "${tc.name}"?`)) return;
+                          const targetId = tc._id || tc.testCaseId;
+                          const displayName = tc.name || tc.testCaseId || 'this test case';
+                          if (!confirm(`Delete test case "${displayName}"?`)) return;
+
+                          // Optimistic local state update
+                          setTestCasesList(prev => prev.filter(c => c._id !== targetId && c.testCaseId !== targetId && c._id !== tc._id));
+
                           try {
-                            const res = await fetch(`/api/test-cases/${tc._id}`, { method: 'DELETE' });
+                            let res = await fetch(`/api/test-cases/${encodeURIComponent(targetId)}`, {
+                              method: 'DELETE',
+                              cache: 'no-store',
+                            });
+                            if (!res.ok) {
+                              res = await fetch(`/api/test-cases?id=${encodeURIComponent(targetId)}`, {
+                                method: 'DELETE',
+                                cache: 'no-store',
+                              });
+                            }
                             if (res.ok) {
-                              showToast(`✓ Deleted "${tc.testCaseId}"`);
+                              showToast(`✓ Deleted "${tc.testCaseId || displayName}"`);
+                              loadAllData();
+                            } else {
+                              const errData = await res.json().catch(() => ({}));
+                              showToast(errData.error || 'Failed to delete test case', 'error');
                               loadAllData();
                             }
                           } catch (err) {
                             showToast(err.message, 'error');
+                            loadAllData();
                           }
                         }}
                         className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
-                        title="Delete"
+                        title="Delete Test Case"
                       >
                         <Trash2 size={13} />
                       </button>

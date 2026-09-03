@@ -26,17 +26,22 @@ export default function CourseDetailsPage({ params }) {
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [paymentSettings, setPaymentSettings] = useState({ currencySymbol: '₹', commonFeeAmount: 499 });
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [cRes, lRes] = await Promise.all([
+        const [cRes, lRes, pRes] = await Promise.all([
           fetch(`/api/courses/${courseId}`).then(r => r.json()),
           fetch(`/api/courses/${courseId}/lessons`).then(r => r.json()).catch(() => []),
+          fetch('/api/payments').then(r => r.json()).catch(() => ({})),
         ]);
         setCourse(cRes);
         setLessons(Array.isArray(lRes) ? lRes : []);
+        if (pRes?.paymentSettings) {
+          setPaymentSettings(pRes.paymentSettings);
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -121,11 +126,11 @@ export default function CourseDetailsPage({ params }) {
             <div className="space-y-3">
               <div className="flex items-baseline justify-between">
                 <div className="text-2xl font-black text-emerald-400">
-                  {course.isFree ? '100% Free' : `$${course.price || 49.99}`}
+                  {course.isFree ? '100% Free' : `${paymentSettings.currencySymbol || '₹'}${course.price || paymentSettings.commonFeeAmount || 499}`}
                 </div>
                 {course.originalPrice > 0 && (
                   <div className="text-xs text-slate-500 line-through">
-                    ${course.originalPrice}
+                    {paymentSettings.currencySymbol || '₹'}{course.originalPrice}
                   </div>
                 )}
               </div>
