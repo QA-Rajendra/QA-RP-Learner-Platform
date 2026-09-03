@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -43,6 +44,7 @@ export default function RootLayout({ children }) {
           <main className="min-h-screen transition-colors duration-200" suppressHydrationWarning>
             {children}
           </main>
+          <Footer />
         </Providers>
       </body>
     </html>

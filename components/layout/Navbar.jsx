@@ -178,6 +178,23 @@ export default function Navbar() {
                             <div className="text-[10px] text-slate-400 font-normal truncate">Execute & author test cases</div>
                           </div>
                         </Link>
+
+                        <Link
+                          href="/notes"
+                          onClick={() => setAdminDropdown(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold hover:bg-white/5 transition"
+                          style={{
+                            color: pathname === '/notes' ? 'var(--color-primary)' : 'var(--text-main)',
+                          }}
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0">
+                            <FileText size={14} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="truncate">QA-Notes</div>
+                            <div className="text-[10px] text-slate-400 font-normal truncate">Modules, transcript &amp; AI sync</div>
+                          </div>
+                        </Link>
                       </div>
                     </div>
                   </>
@@ -263,6 +280,7 @@ export default function Navbar() {
           <MobileLink href="/contact" label="✉️ Contact & Inquiries" onClick={() => setMenuOpen(false)} />
           {isAdmin && (
             <>
+              <MobileLink href="/notes" label="📝 QA-Notes Studio" onClick={() => setMenuOpen(false)} />
               <MobileLink href="/gallery" label="📁 Admin Media Gallery" onClick={() => setMenuOpen(false)} />
               <MobileLink href="/settings" label="⚙️ Admin Settings Studio" onClick={() => setMenuOpen(false)} />
             </>
