@@ -54,7 +54,34 @@
 }
 
 /* ========================================================
-   THEME 3: Midnight Cyber 🌙
+   THEME 3: Winter Teal (Color Hunt) ❄️
+   Palette: #E3FDFD, #CBF1F5, #A6E3E9, #71C9CE
+   ======================================================== */
+[data-theme='winter-teal'] {
+  --bg-main: #E3FDFD;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #CBF1F5;
+  --bg-surface: #CBF1F5;
+  --bg-input: #FFFFFF;
+  --color-primary: #0F766E;
+  --color-primary-hover: #115E59;
+  --color-secondary: #71C9CE;
+  --text-main: #0B2527;
+  --text-muted: #2E5A5E;
+  --text-subtle: #5C8B8E;
+  --border-color: #A6E3E9;
+  --border-active: #71C9CE;
+  --color-success: #0D9488;
+  --color-error: #E11D48;
+  --color-warning: #D97706;
+  --nav-bg: rgba(227, 253, 253, 0.94);
+  --card-shadow: 0 10px 30px -5px rgba(113, 201, 206, 0.25);
+  --primary-glow: 0 0 25px rgba(113, 201, 206, 0.35);
+  --theme-gradient: linear-gradient(135deg, #0F766E, #71C9CE);
+}
+
+/* ========================================================
+   THEME 4: Midnight Cyber 🌙
    ======================================================== */
 [data-theme='midnight-cyber'] {
   --bg-main: #050811;
@@ -77,110 +104,6 @@
   --card-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2);
   --primary-glow: 0 0 30px rgba(6, 182, 212, 0.3);
   --theme-gradient: linear-gradient(135deg, #06B6D4, #3B82F6);
-}
-
-/* ========================================================
-   THEME 4: Daylight Neo 🌞
-   ======================================================== */
-[data-theme='daylight-neo'] {
-  --bg-main: #F4F5F8;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F8FAFC;
-  --bg-surface: #FFFFFF;
-  --bg-input: #FFFFFF;
-  --color-primary: #F59E0B;
-  --color-primary-hover: #D97706;
-  --color-secondary: #EA580C;
-  --text-main: #18181B;
-  --text-muted: #71717A;
-  --text-subtle: #A1A1AA;
-  --border-color: #E4E4E7;
-  --border-active: #F59E0B;
-  --color-success: #10B981;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
-  --nav-bg: rgba(244, 245, 248, 0.95);
-  --card-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.1);
-  --primary-glow: 0 0 25px rgba(245, 158, 11, 0.2);
-  --theme-gradient: linear-gradient(135deg, #F59E0B, #EA580C);
-}
-
-/* ========================================================
-   THEME 5: Cyberpunk 2077 ⚡
-   ======================================================== */
-[data-theme='cyberpunk-2077'] {
-  --bg-main: #0A0A10;
-  --bg-card: #131320;
-  --bg-card-hover: #1C1C30;
-  --bg-surface: #0E0E18;
-  --bg-input: #131320;
-  --color-primary: #FEE715;
-  --color-primary-hover: #E5CF00;
-  --color-secondary: #FF0055;
-  --text-main: #FFFDF0;
-  --text-muted: #9E9EAA;
-  --text-subtle: #6B6B7A;
-  --border-color: #2E2A45;
-  --border-active: #FEE715;
-  --color-success: #00FF9F;
-  --color-error: #FF0055;
-  --color-warning: #FEE715;
-  --nav-bg: rgba(10, 10, 16, 0.95);
-  --card-shadow: 0 10px 30px -10px rgba(254, 231, 21, 0.2);
-  --primary-glow: 0 0 30px rgba(254, 231, 21, 0.35);
-  --theme-gradient: linear-gradient(135deg, #FEE715, #FF0055);
-}
-
-/* ========================================================
-   THEME 6: Synthwave 80s 👾
-   ======================================================== */
-[data-theme='synthwave-80s'] {
-  --bg-main: #12072B;
-  --bg-card: #1D0F3F;
-  --bg-card-hover: #291656;
-  --bg-surface: #170A36;
-  --bg-input: #1D0F3F;
-  --color-primary: #FF2A85;
-  --color-primary-hover: #E01970;
-  --color-secondary: #9D4EDD;
-  --text-main: #FCE7F3;
-  --text-muted: #A78BFA;
-  --text-subtle: #7C5EB8;
-  --border-color: #3B1C78;
-  --border-active: #FF2A85;
-  --color-success: #06D6A0;
-  --color-error: #EF476F;
-  --color-warning: #FFD166;
-  --nav-bg: rgba(18, 7, 43, 0.95);
-  --card-shadow: 0 10px 30px -10px rgba(255, 42, 133, 0.3);
-  --primary-glow: 0 0 35px rgba(255, 42, 133, 0.4);
-  --theme-gradient: linear-gradient(135deg, #FF2A85, #9D4EDD);
-}
-
-/* ========================================================
-   THEME 7: Cosmic Aurora 🌌
-   ======================================================== */
-[data-theme='cosmic-aurora'] {
-  --bg-main: #060B1E;
-  --bg-card: #0E1738;
-  --bg-card-hover: #152250;
-  --bg-surface: #0A112C;
-  --bg-input: #0E1738;
-  --color-primary: #8B5CF6;
-  --color-primary-hover: #7C3AED;
-  --color-secondary: #06B6D4;
-  --text-main: #EDE9FE;
-  --text-muted: #94A3B8;
-  --text-subtle: #64748B;
-  --border-color: #1F2E63;
-  --border-active: #8B5CF6;
-  --color-success: #10B981;
-  --color-error: #F43F5E;
-  --color-warning: #F59E0B;
-  --nav-bg: rgba(6, 11, 30, 0.95);
-  --card-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.25);
-  --primary-glow: 0 0 35px rgba(139, 92, 246, 0.35);
-  --theme-gradient: linear-gradient(135deg, #8B5CF6, #06B6D4);
 }
 
 /* ========================================================
@@ -215,11 +138,17 @@ html {
 /* ========================================================
    UNIVERSAL THEME OVERRIDES FOR ALL PAGES
    ======================================================== */
-[data-theme] .bg-slate-950 {
+[data-theme] .bg-slate-950,
+[data-theme] .bg-zinc-950,
+[data-theme] .bg-gray-950 {
   background-color: var(--bg-main) !important;
 }
 
 [data-theme] .bg-slate-900,
+[data-theme] .bg-slate-900\/60,
+[data-theme] .bg-slate-900\/80,
+[data-theme] .bg-slate-900\/40,
+[data-theme] .bg-slate-950\/80,
 [data-theme] .bg-zinc-900,
 [data-theme] .bg-gray-900 {
   background-color: var(--bg-card) !important;
@@ -232,10 +161,35 @@ html {
   background-color: var(--bg-card-hover) !important;
 }
 
+/* Notes Studio Hardcoded Palette Overrides */
+[data-theme] .bg-\[\#0d141e\] {
+  background-color: var(--bg-main) !important;
+}
+
+[data-theme] .bg-\[\#0f1723\] {
+  background-color: var(--bg-card) !important;
+}
+
+[data-theme] .bg-\[\#172232\],
+[data-theme] .bg-\[\#182637\],
+[data-theme] .bg-\[\#1a2738\] {
+  background-color: var(--bg-card-hover) !important;
+}
+
+[data-theme] .bg-\[\#0c131d\],
+[data-theme] .bg-\[\#141f2e\] {
+  background-color: var(--bg-surface) !important;
+}
+
 [data-theme] .border-slate-800,
 [data-theme] .border-slate-800\/80,
+[data-theme] .border-slate-800\/60,
+[data-theme] .border-slate-800\/40,
 [data-theme] .border-slate-700,
 [data-theme] .border-slate-700\/80,
+[data-theme] .border-slate-700\/70,
+[data-theme] .border-slate-700\/60,
+[data-theme] .border-slate-700\/50,
 [data-theme] .border-zinc-800,
 [data-theme] .border-gray-800 {
   border-color: var(--border-color) !important;
@@ -264,6 +218,12 @@ html {
   border-color: var(--border-color) !important;
 }
 
+/* Light / Cold themes radial gradient cleanup */
+[data-theme='winter-teal'] .bg-radial,
+[data-theme='clean-light'] .bg-radial {
+  background: var(--bg-main) !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -279,3 +239,21 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* Print Optimization for Notes Studio */
+@media print {
+  nav, header, footer, .no-print, [aria-label="Close sidebar"] {
+    display: none !important;
+  }
+  body, main {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .print-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}

@@ -19,20 +19,27 @@ import {
   Shield,
   ChevronDown,
   ClipboardList,
-  ShieldCheck
+  ShieldCheck,
+  Palette,
+  Check
 } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme, themes, currentTheme } = useTheme();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [adminDropdown, setAdminDropdown] = useState(false);
+  const [themeDropdown, setThemeDropdown] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Only evaluate role after mount to prevent SSR/CSR hydration mismatch
@@ -203,14 +210,104 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Quick Controls: Role/Auth */}
-          <div className="flex items-center gap-2.5">
+          {/* Quick Controls: Theme Picker + Role/Auth */}
+          <div className="flex items-center gap-2">
+            {/* Live Theme Switcher Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setThemeDropdown(!themeDropdown)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer shadow-xs"
+                title={`Theme: ${currentTheme?.name || 'Theme'}`}
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  borderColor: 'var(--border-color)',
+                  color: 'var(--text-main)',
+                }}
+              >
+                <Palette size={13} style={{ color: 'var(--color-primary)' }} />
+                <span className="text-sm leading-none">{currentTheme?.icon || '🎨'}</span>
+                <span className="hidden xl:inline text-[11px] font-semibold">{currentTheme?.name}</span>
+                <ChevronDown size={11} className={`opacity-60 transition-transform ${themeDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {themeDropdown && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setThemeDropdown(false)} />
+                  <div
+                    className="absolute right-0 mt-2 w-64 rounded-2xl p-2 z-50 border shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+                    style={{
+                      backgroundColor: 'var(--bg-card)',
+                      borderColor: 'var(--border-color)',
+                      boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
+                    }}
+                  >
+                    <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-700/50 flex items-center justify-between">
+                      <span>Choose Theme Palette</span>
+                      <Palette size={12} style={{ color: 'var(--color-primary)' }} />
+                    </div>
+
+                    <div className="space-y-1 mt-1 max-h-80 overflow-y-auto pr-0.5">
+                      {themes.map((t) => {
+                        const isSelected = theme === t.id;
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => {
+                              setTheme(t.id);
+                              setThemeDropdown(false);
+                            }}
+                            className={`w-full flex items-center justify-between p-2 rounded-xl text-xs font-bold transition text-left cursor-pointer border ${
+                              isSelected
+                                ? 'border-teal-400/80 shadow-xs'
+                                : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+                            }`}
+                            style={{
+                              backgroundColor: isSelected ? 'var(--bg-card-hover)' : 'transparent',
+                              color: 'var(--text-main)',
+                            }}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base">{t.icon}</span>
+                              <div className="truncate">
+                                <div className="leading-tight flex items-center gap-1.5">
+                                  <span>{t.name}</span>
+                                  {t.id === 'winter-teal' && (
+                                    <span className="px-1.5 py-0.2 rounded text-[8px] bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                                      New
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[9px] opacity-60 font-normal truncate">{t.tagline}</div>
+                              </div>
+                            </div>
+
+                            {/* Color Swatch Dots */}
+                            <div className="flex items-center gap-1 shrink-0 ml-2">
+                              {['bgMain', 'primary', 'secondary'].map((k) => (
+                                <div
+                                  key={k}
+                                  className="w-2.5 h-2.5 rounded-full border border-black/10"
+                                  style={{ backgroundColor: t.colors[k] }}
+                                />
+                              ))}
+                              {isSelected && <Check size={12} style={{ color: 'var(--color-primary)' }} />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {isAdmin ? (
               /* Admin Active State */
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm"
                   style={{
                     backgroundColor: 'rgba(239, 68, 68, 0.15)',
                     borderColor: 'rgba(239, 68, 68, 0.3)',
@@ -223,7 +320,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   disabled={switching}
                   title="Logout from Admin"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition border shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition border shadow-sm cursor-pointer"
                   style={{
                     backgroundColor: 'var(--bg-card)',
                     borderColor: 'var(--border-color)',
@@ -248,7 +345,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-1.5 rounded-lg border"
+              className="lg:hidden p-1.5 rounded-lg border cursor-pointer"
               style={{
                 borderColor: 'var(--border-color)',
                 backgroundColor: 'var(--bg-card)',
@@ -271,6 +368,28 @@ export default function Navbar() {
             borderColor: 'var(--border-color)',
           }}
         >
+          {/* Quick Theme Switcher in Mobile Drawer */}
+          <div className="p-2 mb-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-slate-700/40">
+            <div className="text-[10px] font-bold uppercase tracking-wider opacity-60 mb-1.5 flex items-center gap-1">
+              <Palette size={11} /> Switch Theme ({currentTheme?.name})
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {themes.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTheme(t.id)}
+                  className={`p-1.5 rounded-xl text-center text-xs flex flex-col items-center gap-0.5 border cursor-pointer ${
+                    theme === t.id ? 'border-teal-400 bg-teal-500/20 font-bold' : 'border-transparent hover:bg-white/5'
+                  }`}
+                >
+                  <span className="text-sm">{t.icon}</span>
+                  <span className="text-[9px] truncate max-w-full">{t.name.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <MobileLink href="/" label="🏠 Home" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/about" label="👤 About Instructor" onClick={() => setMenuOpen(false)} />
           <MobileLink href="/courses" label="📚 Courses Catalog" onClick={() => setMenuOpen(false)} />
