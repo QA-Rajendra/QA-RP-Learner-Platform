@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import {
   ClipboardList,
   Plus,
@@ -28,12 +30,20 @@ import {
   FolderPlus,
   LayoutList,
   SlidersHorizontal,
-  FolderOpen
+  FolderOpen,
+  Lock,
 } from 'lucide-react';
 import CreateTestCaseModal from '@/components/testcases/CreateTestCaseModal';
 import TestCasePreviewModal from '@/components/testcases/TestCasePreviewModal';
 
 function TestCasesContent() {
+  const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isAdmin = mounted && session?.user?.role === 'ADMIN';
+
   const searchParams = useSearchParams();
   const initialModule = searchParams.get('module') || 'All';
 
@@ -351,18 +361,34 @@ function TestCasesContent() {
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Status Quick Select */}
-            <select
-              value={tc.status || 'Ready'}
-              onChange={(e) => handleToggleStatus(tc, e.target.value)}
-              className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300 focus:outline-none cursor-pointer"
-            >
-              <option value="Ready">Ready</option>
-              <option value="Passed">Passed</option>
-              <option value="Failed">Failed</option>
-              <option value="Automated">Automated</option>
-              <option value="Draft">Draft</option>
-            </select>
+            {/* Status: Select Dropdown (Admin) vs Status Badge (Student Read-Only) */}
+            {isAdmin ? (
+              <select
+                value={tc.status || 'Ready'}
+                onChange={(e) => handleToggleStatus(tc, e.target.value)}
+                className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300 focus:outline-none cursor-pointer"
+              >
+                <option value="Ready">Ready</option>
+                <option value="Passed">Passed</option>
+                <option value="Failed">Failed</option>
+                <option value="Automated">Automated</option>
+                <option value="Draft">Draft</option>
+              </select>
+            ) : (
+              <span
+                className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${
+                  tc.status === 'Automated'
+                    ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                    : tc.status === 'Passed'
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                    : tc.status === 'Failed'
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    : 'bg-slate-800/80 text-slate-300 border-slate-700'
+                }`}
+              >
+                {tc.status || 'Ready'}
+              </span>
+            )}
 
             {/* Preview */}
             <button
@@ -386,14 +412,16 @@ function TestCasesContent() {
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
-            {/* Delete */}
-            <button
-              onClick={() => handleDelete(tc._id, tc.name, tc.testCaseId)}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
-              title="Delete Test Case"
-            >
-              <Trash2 size={14} />
-            </button>
+            {/* Delete (Admin Only) */}
+            {isAdmin && (
+              <button
+                onClick={() => handleDelete(tc._id, tc.name, tc.testCaseId)}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                title="Delete Test Case"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -492,43 +520,52 @@ function TestCasesContent() {
               <Download size={14} /> Export JSON
             </button>
 
-            <button
-              onClick={() => {
-                setModalInitialTab('ai');
-                setCreateModalOpen(true);
-              }}
-              className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 via-indigo-500/20 to-cyan-500/20 hover:from-purple-500/35 hover:to-cyan-500/35 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-              title="Generate test cases with AI"
-            >
-              <Sparkles size={14} className="text-cyan-400" />
-              <span>✨ AI Generator</span>
-            </button>
+            {isAdmin ? (
+              <>
+                <button
+                  onClick={() => {
+                    setModalInitialTab('ai');
+                    setCreateModalOpen(true);
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 via-indigo-500/20 to-cyan-500/20 hover:from-purple-500/35 hover:to-cyan-500/35 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                  title="Generate test cases with AI"
+                >
+                  <Sparkles size={14} className="text-cyan-400" />
+                  <span>✨ AI Generator</span>
+                </button>
 
-            <button
-              onClick={() => {
-                setModalInitialTab('suite');
-                setModalInitialSuite('');
-                setModalInitialModule(selectedModule !== 'All' ? selectedModule : 'Login');
-                setCreateModalOpen(true);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-purple-950/60 cursor-pointer"
-              title="Create a complete Test Suite Section"
-            >
-              <Layers size={14} />
-              <span>+ Create Test Suite</span>
-            </button>
+                <button
+                  onClick={() => {
+                    setModalInitialTab('suite');
+                    setModalInitialSuite('');
+                    setModalInitialModule(selectedModule !== 'All' ? selectedModule : 'Login');
+                    setCreateModalOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-purple-950/60 cursor-pointer"
+                  title="Create a complete Test Suite Section"
+                >
+                  <Layers size={14} />
+                  <span>+ Create Test Suite</span>
+                </button>
 
-            <button
-              onClick={() => {
-                setModalInitialTab('manual');
-                setModalInitialSuite('');
-                setModalInitialModule(selectedModule !== 'All' ? selectedModule : 'Login');
-                setCreateModalOpen(true);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <Plus size={14} /> + Single Case
-            </button>
+                <button
+                  onClick={() => {
+                    setModalInitialTab('manual');
+                    setModalInitialSuite('');
+                    setModalInitialModule(selectedModule !== 'All' ? selectedModule : 'Login');
+                    setCreateModalOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <Plus size={14} /> + Single Case
+                </button>
+              </>
+            ) : (
+              <div className="px-3.5 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/25 text-purple-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                <Lock size={13} className="text-purple-400" />
+                <span>Student Read-Only Mode</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -780,39 +817,43 @@ function TestCasesContent() {
 
                     {/* Suite Actions */}
                     <div className="flex items-center gap-2 shrink-0 justify-end">
-                      {/* Add Case to this Suite */}
-                      <button
-                        onClick={() => {
-                          setModalInitialTab('manual');
-                          setModalInitialSuite(suiteGroup.title);
-                          setModalInitialModule(suiteGroup.module);
-                          setCreateModalOpen(true);
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
-                        title="Add Test Case to this Suite"
-                      >
-                        <Plus size={13} />
-                        <span>Add Case</span>
-                      </button>
+                      {isAdmin && (
+                        <>
+                          {/* Add Case to this Suite */}
+                          <button
+                            onClick={() => {
+                              setModalInitialTab('manual');
+                              setModalInitialSuite(suiteGroup.title);
+                              setModalInitialModule(suiteGroup.module);
+                              setCreateModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                            title="Add Test Case to this Suite"
+                          >
+                            <Plus size={13} />
+                            <span>Add Case</span>
+                          </button>
 
-                      {/* Quick Suite Status Batch */}
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleBatchSuiteStatus(suiteGroup, e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                        defaultValue=""
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300 focus:outline-none cursor-pointer"
-                        title="Batch set status for all cases in this suite"
-                      >
-                        <option value="" disabled>Set All Status...</option>
-                        <option value="Ready">Set All Ready</option>
-                        <option value="Automated">Set All Automated</option>
-                        <option value="Passed">Set All Passed</option>
-                        <option value="Draft">Set All Draft</option>
-                      </select>
+                          {/* Quick Suite Status Batch */}
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                handleBatchSuiteStatus(suiteGroup, e.target.value);
+                                e.target.value = '';
+                              }
+                            }}
+                            defaultValue=""
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300 focus:outline-none cursor-pointer"
+                            title="Batch set status for all cases in this suite"
+                          >
+                            <option value="" disabled>Set All Status...</option>
+                            <option value="Ready">Set All Ready</option>
+                            <option value="Automated">Set All Automated</option>
+                            <option value="Passed">Set All Passed</option>
+                            <option value="Draft">Set All Draft</option>
+                          </select>
+                        </>
+                      )}
 
                       {/* Collapse/Expand Toggle */}
                       <button
@@ -843,23 +884,25 @@ function TestCasesContent() {
         )}
       </div>
 
-      {/* Create Test Case / Suite Modal */}
-      <CreateTestCaseModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        initialTab={modalInitialTab}
-        initialSuite={modalInitialSuite}
-        initialModule={modalInitialModule}
-        onSuccess={(result) => {
-          const msg = result?.suiteName
-            ? `✓ Created Test Suite "${result.suiteName}" with ${result.count} test cases!`
-            : result?.count
-            ? `✓ Saved ${result.count} test cases successfully!`
-            : `✓ Test Case "${result?.testCaseId || 'Created'}" saved successfully!`;
-          showToast(msg);
-          fetchTestCases();
-        }}
-      />
+      {/* Create Test Case / Suite Modal (Admin Only) */}
+      {isAdmin && (
+        <CreateTestCaseModal
+          isOpen={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          initialTab={modalInitialTab}
+          initialSuite={modalInitialSuite}
+          initialModule={modalInitialModule}
+          onSuccess={(result) => {
+            const msg = result?.suiteName
+              ? `✓ Created Test Suite "${result.suiteName}" with ${result.count} test cases!`
+              : result?.count
+              ? `✓ Saved ${result.count} test cases successfully!`
+              : `✓ Test Case "${result?.testCaseId || 'Created'}" saved successfully!`;
+            showToast(msg);
+            fetchTestCases();
+          }}
+        />
+      )}
 
       {/* Preview Modal */}
       <TestCasePreviewModal
